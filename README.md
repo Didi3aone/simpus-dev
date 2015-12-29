@@ -1,2 +1,2 @@
-# simpus-beta
-Simpus untuk beta
+# simpus-dev
+Simpus Development Version
