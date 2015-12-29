@@ -1,0 +1,71 @@
+CREATE VIEW v_trans_pelayanan AS
+SELECT p.kd_trans_pelayanan, p.kd_rekam_medis, p.tgl_pelayanan, jl.jenis_layanan, up.nm_unit as unit_layanan, GROUP_CONCAT(DISTINCT pp.kd_penyakit SEPARATOR '; ') as kd_icd, GROUP_CONCAT(DISTINCT i.penyakit SEPARATOR '; ') as penyakit, GROUP_CONCAT(DISTINCT pt.kd_produk SEPARATOR ', ') as kd_tindakan, GROUP_CONCAT(DISTINCT t.produk SEPARATOR ', ') as tindakan, GROUP_CONCAT(DISTINCT po.kd_obat SEPARATOR ', ') as kd_obat, GROUP_CONCAT(DISTINCT o.nama_obat SEPARATOR ', ') as obat, d.nm_dokter as dokter, p.anamnesa, p.cat_fisik as catatan_fisik, p.cat_dokter as catatan_dokter, p.kd_puskesmas, pk.nm_puskesmas
+FROM pelayanan p, jenis_layanan jl, unit_pelayanan up, pelayanan_penyakit pp, icd i, pelayanan_tindakan pt, tindakan t, pelayanan_obat po, obat o, dokter d, puskesmas pk
+WHERE
+ p.kd_jenis_layanan = jl.kd_jenis_layanan AND
+ p.kd_unit_pelayanan = up.kd_unit_pelayanan AND
+ p.kd_trans_pelayanan = pp.kd_trans_pelayanan AND
+ p.kd_trans_pelayanan = pt.kd_trans_pelayanan AND
+ p.kd_trans_pelayanan = po.kd_trans_pelayanan AND
+ pp.kd_penyakit = i.kd_penyakit AND
+ pt.kd_produk = t.kd_produk AND
+ po.kd_obat = o.kd_obat AND
+ p.kd_dokter = d.kd_dokter AND
+ p.kd_puskesmas = pk.kd_puskesmas
+GROUP BY p.kd_trans_pelayanan
+
+CREATE VIEW v_trans_pelayanan AS
+SELECT p.kd_trans_pelayanan, p.kd_rekam_medis, p.tgl_pelayanan, up.nm_unit as unit_layanan, GROUP_CONCAT(DISTINCT pp.kd_penyakit SEPARATOR '; ') as kd_icd, GROUP_CONCAT(DISTINCT i.penyakit SEPARATOR '; ') as penyakit, GROUP_CONCAT(DISTINCT pt.kd_produk SEPARATOR ', ') as kd_tindakan, GROUP_CONCAT(DISTINCT t.produk SEPARATOR ', ') as tindakan, GROUP_CONCAT(DISTINCT po.kd_obat SEPARATOR ', ') as kd_obat, GROUP_CONCAT(DISTINCT o.nama_obat SEPARATOR '; ') as obat, GROUP_CONCAT(po.dosis SEPARATOR "; ") as dosis, GROUP_CONCAT(po.qty SEPARATOR "; ") as jml_obat, d.nm_dokter as dokter, p.anamnesa, p.cat_fisik as catatan_fisik, p.cat_dokter as catatan_dokter, p.kd_puskesmas, pk.nm_puskesmas
+FROM pelayanan p 
+LEFT JOIN unit_pelayanan up ON p.kd_unit_pelayanan = up.kd_unit_pelayanan
+LEFT JOIN pelayanan_penyakit pp ON  p.kd_trans_pelayanan = pp.kd_trans_pelayanan
+LEFT JOIN icd i ON pp.kd_penyakit = i.kd_penyakit 
+LEFT JOIN pelayanan_tindakan pt ON p.kd_trans_pelayanan = pt.kd_trans_pelayanan 
+LEFT JOIN tindakan t ON pt.kd_produk = t.kd_produk
+LEFT JOIN pelayanan_obat po ON p.kd_trans_pelayanan = po.kd_trans_pelayanan
+LEFT JOIN obat o ON po.kd_obat = o.kd_obat
+LEFT JOIN dokter d ON p.kd_dokter = d.kd_dokter
+LEFT JOIN puskesmas pk ON p.kd_puskesmas = pk.kd_puskesmas
+GROUP BY p.kd_trans_pelayanan
+
+
+CREATE VIEW v_lb1 AS
+SELECT
+	pp.kd_trans_pelayanan,
+	pl.tgl_pelayanan,
+	up.nm_unit,
+	cb.cara_bayar,
+	pl.kd_rekam_medis,
+	p.nm_lengkap,
+	jk.jenis_kelamin,
+	p.umur,
+	gu.gol_umur,
+	jkas.jenis_kasus,
+	pp.kd_penyakit,
+	ic.penyakit,
+	p.kd_jenis_kelamin,
+	pl.kd_puskesmas,
+	pp.kd_gol_umur,
+	pp.kd_jenis_kasus,
+	pl.kd_unit_pelayanan,
+	pl.kd_bayar
+FROM 
+	pelayanan_penyakit pp 
+LEFT JOIN 
+	pelayanan pl ON pp.kd_trans_pelayanan = pl.kd_trans_pelayanan 
+LEFT JOIN 
+	pasien p ON pl.kd_rekam_medis = p.kd_rekam_medis 
+LEFT JOIN 
+	jenis_kelamin jk ON p.kd_jenis_kelamin = jk.kd_jenis_kelamin 
+LEFT JOIN 
+	golongan_umur gu ON pp.kd_gol_umur = gu.kd_gol_umur 
+LEFT JOIN 
+	jenis_kasus jkas ON pp.kd_jenis_kasus = jkas.kd_jenis_kasus 
+LEFT JOIN 
+	icd ic ON pp.kd_penyakit = ic.kd_penyakit 
+LEFT JOIN 
+	unit_pelayanan up ON pl.kd_unit_pelayanan = up.kd_unit_pelayanan 
+LEFT JOIN 
+	cara_bayar cb ON pl.kd_bayar = cb.kd_bayar
+	
+VIEW `v_lb1` AS select `pp`.`kd_trans_pelayanan` AS `kd_trans_pelayanan`,`pl`.`tgl_pelayanan` AS `tgl_pelayanan`,`pl`.`kd_rekam_medis` AS `kd_rekam_medis`,`p`.`nm_lengkap` AS `nm_lengkap`,`jk`.`jenis_kelamin` AS `jenis_kelamin`,`p`.`umur` AS `umur`,`gu`.`gol_umur` AS `gol_umur`,`jkas`.`jenis_kasus` AS `jenis_kasus`,`pp`.`kd_penyakit` AS `kd_penyakit`,`ic`.`penyakit` AS `penyakit`,`p`.`kd_jenis_kelamin` AS `kd_jenis_kelamin`,`pl`.`kd_puskesmas` AS `kd_puskesmas`,`pp`.`kd_gol_umur` AS `kd_gol_umur`,`pp`.`kd_jenis_kasus` AS `kd_jenis_kasus` from ((((((`pelayanan_penyakit` `pp` left join `pelayanan` `pl` on((`pp`.`kd_trans_pelayanan` = `pl`.`kd_trans_pelayanan`))) left join `pasien` `p` on((`pl`.`kd_rekam_medis` = `p`.`kd_rekam_medis`))) left join `jenis_kelamin` `jk` on((`p`.`kd_jenis_kelamin` = `jk`.`kd_jenis_kelamin`))) left join `golongan_umur` `gu` on((`pp`.`kd_gol_umur` = `gu`.`kd_gol_umur`))) left join `jenis_kasus` `jkas` on((`pp`.`kd_jenis_kasus` = `jkas`.`kd_jenis_kasus`))) left join `icd` `ic` on((`pp`.`kd_penyakit` = `ic`.`kd_penyakit`)))
